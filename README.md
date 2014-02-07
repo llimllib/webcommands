@@ -22,3 +22,11 @@ For example, to open one in your favorite web browser on a Mac, try:
 `image squirrel | xargs open`
 
 To turn off google safesearch, pass the --unsafe flag.
+
+##wiki
+
+Search wiki and return the first result.
+
+For example, to open the wiki page for Squirrel in your web browser on a Mac, try:
+
+`wiki squirrel | xargs open`
