@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+import sys
+import argparse
+import urllib2
+from urllib import quote
+import re
+import json
+
+def wiki(searchterm):
+    """return the top wiki search result for the term"""
+    searchterm = quote(searchterm)
+
+    # TODO: internationalize.
+    url = "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={0}&format=json"
+    url = url.format(searchterm)
+
+    result = json.loads(urllib2.urlopen(url).read())
+
+    pages = result["query"]["search"]
+
+    # try to reject disambiguation pages
+    pages = [p for p in pages if not 'may refer to' in p["snippet"]]
+
+    if not pages:
+        return
+
+    return pages[0]
+
+def main(args):
+    wikipage = wiki(' '.join(args.searchterm))
+
+    # urlquote requires non-unicode strings... ugh
+    page = quote(wikipage["title"].encode("utf8"))
+    print "http://en.wikipedia.org/wiki/{0}".format(page)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Query wikipedia from the command line')
+    parser.add_argument('searchterm', metavar='searchterm', type=str, nargs='+',
+                       help='The term to search for. Any amount of words.')
+
+    main(parser.parse_args())
