@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+import sys
+import argparse
+# MAN do I wish I could use requests :(
+import urllib2
+from urllib import quote
+import re
+from random import shuffle
+
+def gif(searchterm, unsafe=False):
+    searchterm = quote(searchterm)
+
+    safe = "&safe=" if unsafe else "&safe=active"
+    searchurl = "https://www.google.com/search?tbs=itp:animated&tbm=isch&q={0}{1}".format(searchterm, safe)
+
+    # this is an old iphone user agent. Seems to make google return good results.
+    useragent = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_0 like Mac OS X; en-us) AppleWebKit/532.9 (KHTML, like Gecko) Version/4.0.5 Mobile/8A293 Safari/6531.22.7"
+
+    opener = urllib2.build_opener()
+    opener.addheaders = [('User-agent', useragent)]
+    result = opener.open(searchurl).read()
+
+    gifs = re.findall(r'imgurl.*?(http.*?)\\', result)
+
+    return gifs
+
+def main(args):
+    gifs = gif(' '.join(args.searchterm), args.unsafe)
+    shuffle(gifs)
+    if gifs:
+        print gifs[0]
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Return a gif related to the search term')
+    parser.add_argument('searchterm', metavar='searchterm', type=str, nargs='+',
+                       help='The term to search for. Any amount of words.')
+    parser.add_argument('--unsafe', dest='unsafe', action='store_const',
+                       const=True, default=False,
+                       help='return results without safesearch')
+
+    main(parser.parse_args())
