@@ -26,16 +26,32 @@ def wiki(searchterm):
 
     return pages[0]
 
+def fulltext(pagetitle):
+    page = quote(pagetitle.encode("utf8"))
+    url = "http://en.wikipedia.org/w/api.php?format=json&action=parse&page=#{0}"
+    url = url.format(page)
+
+    result = json.loads(urllib2.urlopen(url).read())
+
+    pages = result["parse"]["text"]
+
 def main(args):
     wikipage = wiki(' '.join(args.searchterm))
 
     # urlquote requires non-unicode strings... ugh
-    page = quote(wikipage["title"].encode("utf8"))
-    print "http://en.wikipedia.org/wiki/{0}".format(page)
+    if args.snippet:
+
+    else:
+        page = quote(wikipage["title"].encode("utf8"))
+        print "http://en.wikipedia.org/wiki/{0}".format(page)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Query wikipedia from the command line')
     parser.add_argument('searchterm', metavar='searchterm', type=str, nargs='+',
                        help='The term to search for. Any amount of words.')
+
+    parser.add_argument('--snippet', dest='snippet', action='store_const',
+                       const=True, default=False,
+                       help='return a snippet of text instead of a URL')
 
     main(parser.parse_args())
